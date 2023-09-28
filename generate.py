@@ -50,15 +50,18 @@ def main(args):
         print('Aborting')
         return
         
-    for i in tqdm(range(200)):
+    for i in tqdm(range(args.num_images), desc='Generating images'):
         rgb, depth = sdg.get()
         filename = f'img_{i:05d}.png'
 
         cv.imwrite(os.path.join(images_dir, filename), rgb)
         cv.imwrite(os.path.join(masks_dir, filename), depth)
 
+        if not args.visualize:
+            continue
+        
         cv.imshow('Test', rgb)
-        k = cv.waitKey(33)
+        k = cv.waitKey(1)
         if k == 'q':
             break
 
@@ -66,12 +69,15 @@ def main(args):
 if __name__ == "__main__":
     script_dir = os.path.dirname(__file__)
     parser = argparse.ArgumentParser(description='Generate images from 3D models')
-    parser.add_argument('-r', '--render_cfg', help='Path to render config file',
+    parser.add_argument('-r', '--render_cfg', type=str, help='Path to render config file',
                         default=f'{script_dir}/configs/default_render_config.json')
-    parser.add_argument('-c', '--camera_cfg', help='Path to camera config',
+    parser.add_argument('-c', '--camera_cfg', type=str, help='Path to camera config',
                         default=f'{script_dir}/configs/camera.json')
-    parser.add_argument('-m', '--model_file', help='Path to 3D model file', required=True)
-    parser.add_argument('-o', '--output_dir', help='Output directory', required=True)
+    parser.add_argument('-m', '--model_file', type=str, help='Path to 3D model file', required=True)
+    parser.add_argument('-o', '--output_dir', type=str, help='Output directory', required=True)
+    parser.add_argument('-n', '--num_images', type=int, help='Number of images to generate',
+                        default=200)
+    parser.add_argument('-v', '--visualize', action='store_true', help='Display images')
 
     args = parser.parse_args()
     main(args)
